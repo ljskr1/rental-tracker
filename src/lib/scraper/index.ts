@@ -53,13 +53,23 @@ function parseArgonautExchange(html: string): Partial<ScrapedProperty> | null {
   return null;
 }
 
+function parseUrlInfo(url: string): Partial<ScrapedProperty> {
+  const match = url.match(/property-(\w+)-(\w+)-(.+)-(\d+)/);
+  if (!match) return {};
+  return {
+    propertyType: match[1] || null,
+    address: match[3].replace(/\+/g, ' ').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + ', ' + match[2].toUpperCase(),
+  };
+}
+
 export async function scrapeProperty(url: string): Promise<ScrapedProperty> {
   if (!isSupportedDomain(url)) {
     throw new Error(`Unsupported domain. Supported: ${SUPPORTED_DOMAINS.join(', ')}`);
   }
 
+  const urlData = parseUrlInfo(url);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
   let html = '';
 
   try {
@@ -77,11 +87,8 @@ export async function scrapeProperty(url: string): Promise<ScrapedProperty> {
     if (response.ok) {
       html = await response.text();
     }
-  } catch (error) {
+  } catch {
     clearTimeout(timeout);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timeout - the site may be blocking automated requests');
-    }
   }
 
   if (html) {
@@ -91,6 +98,9 @@ export async function scrapeProperty(url: string): Promise<ScrapedProperty> {
     }
   }
 
-  console.log('Direct scrape unavailable, using Gemini extraction...');
-  return extractPropertyData(html || `Property listing: ${url}`, url);
+  if (urlData.address) {
+    return { url, ...urlData } as ScrapedProperty;
+  }
+
+  throw new Error('Could not scrape property data. Please enter details manually.');
 }
