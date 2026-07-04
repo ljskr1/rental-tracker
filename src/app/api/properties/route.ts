@@ -22,8 +22,23 @@ export async function POST(request: NextRequest) {
       }, { status: 200 });
     }
 
-    // Scrape property data
-    const scraped = await scrapeProperty(url);
+    let scraped;
+    try {
+      scraped = await scrapeProperty(url);
+    } catch (scrapeError) {
+      console.warn('Scraping failed, saving with manual data:', scrapeError);
+      scraped = {
+        address: null,
+        price: null,
+        bedrooms: null,
+        bathrooms: null,
+        parking: null,
+        propertyType: null,
+        description: null,
+        images: [],
+        availableDate: null,
+      };
+    }
 
     // Insert into database
     const [property] = await db.insert(properties).values({

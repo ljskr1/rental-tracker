@@ -60,6 +60,7 @@ export async function scrapeProperty(url: string): Promise<ScrapedProperty> {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
+  let html = '';
 
   try {
     const response = await fetch(url, {
@@ -73,31 +74,23 @@ export async function scrapeProperty(url: string): Promise<ScrapedProperty> {
 
     clearTimeout(timeout);
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (response.ok) {
+      html = await response.text();
     }
-
-    const html = await response.text();
-
-    // Try ArgonautExchange first (structured data)
-    const argonautData = parseArgonautExchange(html);
-    
-    if (argonautData && argonautData.address) {
-      return { url, ...argonautData } as ScrapedProperty;
-    }
-
-    // Fallback to Gemini extraction
-    console.log('ArgonautExchange not found, using Gemini extraction...');
-    const geminiData = await extractPropertyData(html, url);
-    
-    return geminiData;
   } catch (error) {
     clearTimeout(timeout);
-    
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Request timeout - the site may be blocking automated requests');
     }
-    
-    throw new Error(`Scraping failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+
+  if (html) {
+    const argonautData = parseArgonautExchange(html);
+    if (argonautData && argonautData.address) {
+      return { url, ...argonautData } as ScrapedProperty;
+    }
+  }
+
+  console.log('Direct scrape unavailable, using Gemini extraction...');
+  return extractPropertyData(html || `Property listing: ${url}`, url);
 }
