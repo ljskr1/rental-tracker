@@ -397,9 +397,16 @@ function AddPropertyModal({
               </label>
               <input
                 id="property-url"
-                type="url"
+                type="text"
+                inputMode="url"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  if (val && !val.startsWith('http://') && !val.startsWith('https://') && (val.includes('realestate.com.au') || val.includes('domain.com.au'))) {
+                    val = 'https://' + val;
+                  }
+                  setUrl(val);
+                }}
                 placeholder="https://www.domain.com.au/..."
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
