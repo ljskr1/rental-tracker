@@ -1,18 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Property } from '@/lib/db/schema';
 import PropertyCard from '@/components/PropertyCard';
 import PropertyTable from '@/components/PropertyTable';
 import SortControls, { SortOption } from '@/components/SortControls';
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>('createdAt');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [sharedUrl, setSharedUrl] = useState('');
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -34,6 +37,15 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  useEffect(() => {
+    const addUrl = searchParams.get('add');
+    if (addUrl) {
+      setSharedUrl(addUrl);
+      setShowAddModal(true);
+      window.history.replaceState({}, '', '/');
+    }
+  }, [searchParams]);
 
   const handleSortChange = (newSort: SortOption, newOrder: 'asc' | 'desc') => {
     setSort(newSort);
@@ -187,9 +199,11 @@ export default function DashboardPage() {
       {/* Add Property Modal */}
       {showAddModal && (
         <AddPropertyModal
-          onClose={() => setShowAddModal(false)}
+          initialUrl={sharedUrl}
+          onClose={() => { setShowAddModal(false); setSharedUrl(''); }}
           onAdded={() => {
             setShowAddModal(false);
+            setSharedUrl('');
             fetchProperties();
           }}
         />
@@ -296,18 +310,31 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 }
 
 function AddPropertyModal({
+  initialUrl,
   onClose,
   onAdded,
 }: {
+  initialUrl?: string;
   onClose: () => void;
   onAdded: () => void;
 }) {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(initialUrl || '');
   const [inspectionDate, setInspectionDate] = useState('');
   const [inspectionTime, setInspectionTime] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clipboardUrl, setClipboardUrl] = useState('');
+
+  useEffect(() => {
+    if (!initialUrl && navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(text => {
+        if (text && (text.includes('realestate.com.au') || text.includes('domain.com.au'))) {
+          setClipboardUrl(text.trim());
+        }
+      }).catch(() => {});
+    }
+  }, [initialUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,6 +443,18 @@ function AddPropertyModal({
               <p className="mt-1.5 text-xs text-gray-500">
                 Paste a link from Domain, Realestate.com.au, or similar
               </p>
+              {clipboardUrl && !url && (
+                <button
+                  type="button"
+                  onClick={() => { setUrl(clipboardUrl); setClipboardUrl(''); }}
+                  className="mt-2 w-full py-2.5 px-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Paste from clipboard
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -519,5 +558,17 @@ function AddPropertyModal({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

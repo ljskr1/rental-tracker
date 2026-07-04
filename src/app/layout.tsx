@@ -13,11 +13,18 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#2563eb",
 };
 
 export const metadata: Metadata = {
-  title: "Rental Tracker - Melbourne Apartments",
+  title: "Rental Tracker",
   description: "Track rental properties with your partner",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Rentals",
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body className={`${geistSans.variable} antialiased bg-gray-50 min-h-screen`}>
         {children}
       </body>

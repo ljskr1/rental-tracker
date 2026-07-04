@@ -1,6 +1,5 @@
 import { load } from 'cheerio';
 import type { ScrapedProperty } from './types';
-import { extractPropertyData } from '@/lib/gemini';
 
 const SUPPORTED_DOMAINS = ['realestate.com.au', 'domain.com.au'];
 
@@ -57,7 +56,7 @@ function parseUrlInfo(url: string): Partial<ScrapedProperty> {
   const match = url.match(/property-(\w+)-(\w+)-(.+)-(\d+)/);
   if (!match) return {};
   return {
-    propertyType: match[1] || null,
+    propertyType: (match[1] as ScrapedProperty['propertyType']) || null,
     address: match[3].replace(/\+/g, ' ').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + ', ' + match[2].toUpperCase(),
   };
 }
