@@ -398,7 +398,6 @@ function AddPropertyModal({
               <input
                 id="property-url"
                 type="text"
-                inputMode="url"
                 value={url}
                 onChange={(e) => {
                   let val = e.target.value;
@@ -408,7 +407,6 @@ function AddPropertyModal({
                   setUrl(val);
                 }}
                 placeholder="https://www.domain.com.au/..."
-                required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 disabled={loading}
               />
