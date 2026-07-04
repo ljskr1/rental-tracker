@@ -7,7 +7,7 @@ import { eq, desc } from 'drizzle-orm';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, inspectionDate, inspectionTime, notes } = body;
+    const { url, price, bedrooms, bathrooms, parking, inspectionDate, inspectionTime, notes } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     const [property] = await db.insert(properties).values({
       url,
       address: scraped.address || 'Address not found',
-      price: scraped.price,
-      bedrooms: scraped.bedrooms,
-      bathrooms: scraped.bathrooms,
-      parking: scraped.parking,
+      price: scraped.price || price || null,
+      bedrooms: scraped.bedrooms ?? bedrooms ?? null,
+      bathrooms: scraped.bathrooms ?? bathrooms ?? null,
+      parking: scraped.parking ?? parking ?? null,
       propertyType: scraped.propertyType,
       description: scraped.description,
       images: scraped.images || [],

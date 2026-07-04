@@ -321,10 +321,13 @@ function AddPropertyModal({
   const [url, setUrl] = useState(initialUrl || '');
   const [inspectionDate, setInspectionDate] = useState('');
   const [inspectionTime, setInspectionTime] = useState('');
-  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [clipboardUrl, setClipboardUrl] = useState('');
+  const [bedrooms, setBedrooms] = useState<number | null>(null);
+  const [bathrooms, setBathrooms] = useState<number | null>(null);
+  const [parking, setParking] = useState<number | null>(null);
+  const [price, setPrice] = useState('');
 
   useEffect(() => {
     if (!initialUrl && navigator.clipboard && navigator.clipboard.readText) {
@@ -350,9 +353,12 @@ function AddPropertyModal({
         credentials: 'include',
         body: JSON.stringify({
           url: url.trim(),
+          price: price ? Math.round(parseFloat(price) * 100) : null,
+          bedrooms,
+          bathrooms,
+          parking,
           inspectionDate: inspectionDate || null,
           inspectionTime: inspectionTime || null,
-          notes: notes || null,
         }),
       });
 
@@ -493,22 +499,89 @@ function AddPropertyModal({
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="notes"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                placeholder="Any additional notes about this property..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
-                disabled={loading}
-              />
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                <div className="flex gap-2">
+                  {['Studio', '1', '2', '3', '4'].map((opt) => {
+                    const val = opt === 'Studio' ? 0 : parseInt(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setBedrooms(bedrooms === val ? null : val)}
+                        className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all ${
+                          bedrooms === val
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                <div className="flex gap-2">
+                  {['1', '2', '3'].map((opt) => {
+                    const val = parseInt(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setBathrooms(bathrooms === val ? null : val)}
+                        className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all ${
+                          bathrooms === val
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Parking</label>
+                <div className="flex gap-2">
+                  {['None', '1', '2'].map((opt) => {
+                    const val = opt === 'None' ? 0 : parseInt(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setParking(parking === val ? null : val)}
+                        className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all ${
+                          parking === val
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">Weekly Rent ($)</label>
+                <input
+                  id="price"
+                  type="number"
+                  inputMode="decimal"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="e.g. 550"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             {/* Actions */}
