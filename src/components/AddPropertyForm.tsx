@@ -313,10 +313,15 @@ export default function AddPropertyForm({ isOpen, onClose, onPropertyAdded }: Ad
             <input
               ref={urlInputRef}
               id="property-url"
-              type="url"
+              type="text"
+              inputMode="url"
               value={url}
               onChange={(e) => {
-                setUrl(e.target.value);
+                let value = e.target.value;
+                if (value && !value.startsWith('http://') && !value.startsWith('https://') && (value.includes('realestate.com.au') || value.includes('domain.com.au'))) {
+                  value = 'https://' + value;
+                }
+                setUrl(value);
                 if (urlError) setUrlError('');
                 if (error) setError(null);
               }}
