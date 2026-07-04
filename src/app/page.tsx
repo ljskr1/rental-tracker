@@ -18,7 +18,9 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/properties?sort=${sort}&order=${order}`);
+      const res = await fetch(`/api/properties?sort=${sort}&order=${order}`, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error('Failed to fetch properties');
       const data = await res.json();
       setProperties(data.properties);
@@ -318,6 +320,7 @@ function AddPropertyModal({
       const res = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           url: url.trim(),
           inspectionDate: inspectionDate || null,

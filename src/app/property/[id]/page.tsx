@@ -326,7 +326,7 @@ export default function PropertyDetailPage() {
 
     async function fetchProperty() {
       try {
-        const res = await fetch(`/api/properties/${id}`);
+        const res = await fetch(`/api/properties/${id}`, { credentials: 'include' });
         if (!res.ok) {
           if (!cancelled) setError('Property not found');
           return;
@@ -369,6 +369,7 @@ export default function PropertyDetailPage() {
       const res = await fetch(`/api/properties/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ inspectionDate, inspectionTime, notes }),
       });
 
@@ -390,7 +391,7 @@ export default function PropertyDetailPage() {
   async function handleDelete() {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('Failed to delete');
       router.push('/');
     } catch {

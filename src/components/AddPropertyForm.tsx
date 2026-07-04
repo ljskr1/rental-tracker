@@ -199,6 +199,7 @@ export default function AddPropertyForm({ isOpen, onClose, onPropertyAdded }: Ad
       const response = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           url: url.trim(),
           inspectionDate: inspectionDate || null,
